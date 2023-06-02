@@ -109,6 +109,9 @@ def train_and_eval(train_data, unif_train_data, val_data, test_data, device = 'c
                 imputation_model.train()
                 impu_f_all = torch.tanh(imputation_model((train_dense[users_all,items_all]).long()))
 
+                ######################################
+                ## 1. Update of theta (Balck Arrows) #
+                ######################################
                 # one_step_model: assumed model, just update one step on base model. it is for updating weight parameters
                 one_step_model = MetaMF(n_user, n_item, dim=base_model_args['emb_dim'], dropout=0)
                 one_step_model.load_state_dict(base_model.state_dict())
@@ -143,7 +146,10 @@ def train_and_eval(train_data, unif_train_data, val_data, test_data, device = 'c
                     weight1_optimizer.step()
                     weight2_optimizer.step()
                 imputation_optimizer.step()
-
+                
+                ######################################
+                ### 2. Update of pi (Blue Arrows) ####
+                ######################################
                 # use new weights to update parameters (real update)       
                 weight1_model.train()
                 weight1 = weight1_model(users_train, items_train)
