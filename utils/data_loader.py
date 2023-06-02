@@ -21,6 +21,7 @@ class Block:
         self.User_loader = DataLoader(Loader_list(torch.arange(self.n_users).to(device)), batch_size=u_batch_size, shuffle=True, num_workers=0)
         self.Item_loader = DataLoader(Loader_list(torch.arange(self.n_items).to(device)), batch_size=i_batch_size, shuffle=True, num_workers=0)
     
+    # search indices by value (batch_user, batch_item)
     def get_batch(self, batch_user, batch_item, device = 'cuda'): 
         index_row = np.isin(self.mat._indices()[0].cpu().numpy(), batch_user.cpu().numpy())
         index_col = np.isin(self.mat._indices()[1].cpu().numpy(), batch_item.cpu().numpy())
