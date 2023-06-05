@@ -89,7 +89,7 @@ def train_and_eval(train_data, unif_train_data, val_data, test_data, device = 'c
                 # data in this batch ~ 
                 # training set: 1. update parameters one_step (assumed update); 2. update parameters (real update) 
                 # uniform set: update hyper_parameters using gradient descent. 
-                users_train, items_train, y_train = train_loader.get_batch(users, items)
+                users_train, items_train, y_train = train_loader.get_batch(users, items, device)
 
                 # all pair
                 all_pair = torch.cartesian_prod(users, items)
@@ -110,7 +110,7 @@ def train_and_eval(train_data, unif_train_data, val_data, test_data, device = 'c
                 impu_f_all = torch.tanh(imputation_model((train_dense[users_all,items_all]).long()))
 
                 ######################################
-                ## 1. Update of theta (Balck Arrows) #
+                ## 1. Update of theta (Black Arrows) #
                 ######################################
                 # one_step_model: assumed model, just update one step on base model. it is for updating weight parameters
                 one_step_model = MetaMF(n_user, n_item, dim=base_model_args['emb_dim'], dropout=0)
@@ -147,9 +147,6 @@ def train_and_eval(train_data, unif_train_data, val_data, test_data, device = 'c
                     weight2_optimizer.step()
                 imputation_optimizer.step()
                 
-                ######################################
-                ### 2. Update of pi (Blue Arrows) ####
-                ######################################
                 # use new weights to update parameters (real update)       
                 weight1_model.train()
                 weight1 = weight1_model(users_train, items_train)
@@ -191,7 +188,7 @@ def train_and_eval(train_data, unif_train_data, val_data, test_data, device = 'c
             train_ratings = torch.empty(0).to(device)
             for u_batch_idx, users in enumerate(train_loader.User_loader): 
                 for i_batch_idx, items in enumerate(train_loader.Item_loader): 
-                    users_train, items_train, y_train = train_loader.get_batch(users, items)
+                    users_train, items_train, y_train = train_loader.get_batch(users, items, device)
                     pre_ratings = base_model(users_train, items_train)
                     train_pre_ratings = torch.cat((train_pre_ratings, pre_ratings))
                     train_ratings = torch.cat((train_ratings, y_train))
@@ -204,8 +201,8 @@ def train_and_eval(train_data, unif_train_data, val_data, test_data, device = 'c
                 val_pre_ratings = torch.cat((val_pre_ratings, pre_ratings))
                 val_ratings = torch.cat((val_ratings, ratings))
 
-        train_results = utils.metrics.evaluate(train_pre_ratings, train_ratings, ['MSE'])
-        val_results = utils.metrics.evaluate(val_pre_ratings, val_ratings, ['MSE', 'NLL', 'AUC'])
+        train_results = utils.metrics.evaluate(train_pre_ratings, train_ratings, ['MSE'], device)
+        val_results = utils.metrics.evaluate(val_pre_ratings, val_ratings, ['MSE', 'NLL', 'AUC'], device)
 
         print('Epoch: {0:2d} / {1}, Validation: {2}'.
                 format(epo, training_args['epochs'], 

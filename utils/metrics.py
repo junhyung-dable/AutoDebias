@@ -28,10 +28,10 @@ def calc(n,m,ttuser,ttitem,pre,ttrating,atk=5):
     # print(ans)
     return [ans[0],ans[1],ans[4]]
 
-def nll(vector_predict, vector_true):
+def nll(vector_predict, vector_true, device='cpu'):
     return -1 / vector_true.shape[0] * torch.sum(torch.log(1 + torch.exp(-vector_predict * vector_true))).item()
 
-def auc(vector_predict, vector_true, device = 'cuda'): 
+def auc(vector_predict, vector_true, device = 'cpu'): 
     pos_indexes = torch.where(vector_true == 1)[0].to(device)
     pos_whe=(vector_true == 1).to(device)
     sort_indexes = torch.argsort(vector_predict).to(device)
@@ -42,11 +42,11 @@ def auc(vector_predict, vector_true, device = 'cuda'):
             (len(pos_indexes) * (len(vector_predict) - len(pos_indexes)))
     return auc.item()
 
-def mse(vector_predict, vector_true): 
+def mse(vector_predict, vector_true, device='cpu'): 
     mse = torch.mean((vector_predict - vector_true)**2)
     return mse.item()
 
-def evaluate(vector_Predict, vector_Test, metric_names, users = None, items = None):
+def evaluate(vector_Predict, vector_Test, metric_names, users = None, items = None, device='cpu'):
     global_metrics = {
         "AUC": auc,
         "NLL": nll,
@@ -57,7 +57,8 @@ def evaluate(vector_Predict, vector_Test, metric_names, users = None, items = No
     for name in metric_names:
         if name != 'Recall_Precision_NDCG@':
             results[name] = global_metrics[name](vector_predict=vector_Predict,
-                                                      vector_true=vector_Test)
+                                                      vector_true=vector_Test,
+                                                      device=device)
 
     if 'Recall_Precision_NDCG@' in metric_names: 
         users_num = torch.max(users).item() + 1
