@@ -81,7 +81,7 @@ def train_and_eval(train_data, unif_train_data, val_data, test_data, device = 'c
             for i_batch_idx, items in enumerate(train_loader.Item_loader): 
                 # loss of training set
                 model.train()
-                users_train, items_train, y_train = train_loader.get_batch(users, items)
+                users_train, items_train, y_train = train_loader.get_batch(users, items, device)
                 y_hat = model(users_train, items_train)
 
                 cost = none_criterion(y_hat, y_train) 
@@ -104,7 +104,7 @@ def train_and_eval(train_data, unif_train_data, val_data, test_data, device = 'c
             train_ratings = torch.empty(0).to(device)
             for u_batch_idx, users in enumerate(train_loader.User_loader): 
                 for i_batch_idx, items in enumerate(train_loader.Item_loader): 
-                    users_train, items_train, y_train = train_loader.get_batch(users, items)
+                    users_train, items_train, y_train = train_loader.get_batch(users, items, device)
                     pre_ratings = model(users_train, items_train)
                     train_pre_ratings = torch.cat((train_pre_ratings, pre_ratings))
                     train_ratings = torch.cat((train_ratings, y_train))
@@ -117,8 +117,8 @@ def train_and_eval(train_data, unif_train_data, val_data, test_data, device = 'c
                 val_pre_ratings = torch.cat((val_pre_ratings, pre_ratings))
                 val_ratings = torch.cat((val_ratings, ratings))
             
-        train_results = utils.metrics.evaluate(train_pre_ratings, train_ratings, ['MSE', 'NLL'])
-        val_results = utils.metrics.evaluate(val_pre_ratings, val_ratings, ['MSE', 'NLL', 'AUC'])
+        train_results = utils.metrics.evaluate(train_pre_ratings, train_ratings, ['MSE', 'NLL'], device)
+        val_results = utils.metrics.evaluate(val_pre_ratings, val_ratings, ['MSE', 'NLL', 'AUC'], device)
 
         print('Epoch: {0:2d} / {1}, Traning: {2}, Validation: {3}'.
                 format(epo, training_args['epochs'], ' '.join([key+':'+'%.3f'%train_results[key] for key in train_results]), 
