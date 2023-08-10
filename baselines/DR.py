@@ -92,7 +92,7 @@ def train_and_eval(train_data, unif_train_data, val_data, test_data, device = 'c
                 for i in range(len(y_unique)): 
                     weight[y_train == y_unique[i]] = InvP[i]
 
-                # step 1: update imptation error model
+                # step 1: update imputation error model
                 imputation_model.train()
 
                 e_hat = imputation_model(users_train, items_train) # imputation error
@@ -105,7 +105,7 @@ def train_and_eval(train_data, unif_train_data, val_data, test_data, device = 'c
                 loss_imp.backward()
                 imputation_optimizer.step()
 
-                # step 2: update predition model
+                # step 2: update prediction model
                 base_model.train()
 
                 # all pair data in this block
